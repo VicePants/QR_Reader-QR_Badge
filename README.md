@@ -1,0 +1,1 @@
+# QR_Reader-QR_Badge
