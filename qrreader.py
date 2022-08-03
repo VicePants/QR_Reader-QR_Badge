@@ -5,7 +5,7 @@ import datetime
 import sqlite3
 
 # needs to be instaled before importing (pip install...)
-# pytesseract its an opensource module used to recognise text, go easy on it, its nos so acurate
+# go easy on pytesseract, its nos so acurate
 import pytesseract
 import numpy as np
 from pyzbar.pyzbar import decode
@@ -16,26 +16,15 @@ import cv2
 pytesseract.pytesseract.tesseract_cmd = r'path\tesseract.exe'
 
 
-# the whole thing is off at the beginning, to activate it, just show it an wrong access code
+
 ACTIVE = 0
 
-# used to
 count = 0
 
-
-#L = c.execute("""SELECT name FROM access""")
-#LIST = [L]
-#print(LIST)
-
-#A = c.execute("""SELECT code FROM access""")
-#ACCESS = [A]
-#print(ACCESS)
-
-
-mail_sender = "the mail adress wich will send you a message"
-mail_reciver = "the reciver mail box"
-password = "sender mail password"
-message = 'the message you want to recive (Movement Detected)'
+mail_sender = "abc@mail.com"
+mail_reciver = "def@mail.com"
+password = "pass"
+message = "Message"
 
 
 def mail():
@@ -44,14 +33,14 @@ def mail():
     server.starttls()
     server.login(mail_sender, password)
     server.sendmail(mail_sender, mail_reciver, message)
-    # a console message, just to be sure its done
+    # a console message
     print('Mail Sent')
     server.quit()
 
-# VideoCapture(0) means that its set to use the default camera of your PC
+# VideoCapture(0) - the default camera
 vid = cv2.VideoCapture(0)
 
-# needed only if you use an image as repere. It means that its searches for changes on the actual immage by comparing it to the default img
+# repere img
 rval, frame = vid.read()
 cv2.imwrite('first_frame.png', frame)
 
@@ -63,8 +52,7 @@ frame2 = background
 while vid.isOpened():
 
     now = datetime.datetime.now()
-    snow = now.strftime('%H:%M:%S')
-    #inow = int(now.strftime('%S'))
+    str_now = now.strftime('%H:%M:%S')
 
     diff = cv2.absdiff(frame1, frame2)
     gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
@@ -96,44 +84,33 @@ while vid.isOpened():
     success, img = vid.read()
     for qr in decode(img):
         myData = qr.data.decode('utf-8')
-        sdata = str(myData)
-
-        #for name in (myData):
-         #   c.execute("SELECT * FROM access WHERE code = ?", (myData))
-          #  data = c.fetchall()
-           # if len(data) == 0:
-            #    print('There is no component named %s' % name)
-            #else:
-             #   print('s %s')
+        str_data = str(myData)
 
         conn = sqlite3.connect("access.db")
 
         c = conn.cursor()
 
-
-
-        access = c.execute("SELECT code FROM access WHERE code = ?", [sdata])
+        access = c.execute("SELECT code FROM access WHERE code = ?", [str_data])
         ACCESS = access.fetchone()
-        #ctn_ACCESS = len(ACCESS)
 
-        if ACCESS is not None:
+        if ACCESS:
 
-           sLIST = c.execute("SELECT name FROM access WHERE code = ?", [sdata])
+           sLIST = c.execute("SELECT name FROM access WHERE code = ?", [str_data])
            LIST = str(sLIST.fetchone())
 
            print(myData)
-           print(snow)
+           print(str_now)
            print("Welcome " + LIST.strip('(,)') + " !")
 
            ACTIVE = 0
-            #verif = c.execute(f"""SELECT * FROM name WHERE code = '{myData}'""")
-            #verif2 = verif.rowcount
-            #if verif2 > 0:
-             #   print(myData)
+            #check = c.execute(f"""SELECT * FROM name WHERE code = '{myData}'""")
+            #check_cnt = check.rowcount
+            #if Ccheck_cnt > 0:
+            #print(myData)
 
         else:
             print(myData)
-            print(snow)
+            print(str_now)
             print("Access Denied !")
 
             if ACTIVE == 0:
@@ -143,27 +120,14 @@ while vid.isOpened():
         pts = np.array([qr.polygon], np.int32)
         pts = pts.reshape((-1, 1, 2))
         cv2.polylines(frame1, [pts], True, (0, 0, 255), 5)
-        pts2 = qr.rect
-        cv2.putText(frame1, "SCANING", (pts2[0], pts2[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255, 10))
+        pts_r = qr.rect
+        cv2.putText(frame1, "SCANING", (pts_r[0], pts_r[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255, 10))
 
-
-
-    #cv2.drawContours(frame1, contour, -1, (0, 255, 0), 2)
 
     cv2.imshow("video", frame1)
     frame1 = frame2
 
     status, frame2 = vid.read()
-
-
-
-    #now2 = datetime.datetime.now()
-    #inow2 = int(now2.strftime('%S'))
-
-    #if inow % 3 == 0 and inow != inow2:
-    #    print(inow)
-    #    rval, frame = vid.read()
-    #    cv2.imwrite('first_frame.png', frame)
 
 
     key = cv2.waitKey(1)
