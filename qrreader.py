@@ -21,9 +21,9 @@ ACTIVE = 0
 
 count = 0
 
-mail_sender = "abc@mail.com"
-mail_reciver = "def@mail.com"
-password = "pass"
+mail_sender = "sender@mail.com"
+mail_reciver = "reciver@mail.com"
+password = "sender_pass"
 message = "Message"
 
 
